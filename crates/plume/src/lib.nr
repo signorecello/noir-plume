@@ -8,7 +8,7 @@ use crate::hash_to_curve::hash_to_curve;
 use bignum::BigNum;
 use nodash::array::pack_bytes;
 use noir_bigcurve::BigCurve;
-use noir_bigcurve::curves::secp256k1::{Secp256k1, Secp256k1Fr, Secp256k1Scalar};
+use noir_bigcurve::curves::secp256k1::{Secp256k1, Secp256k1Fr, Secp256k1Fq, Secp256k1Scalar};
 use noir_bigcurve::scalar_field::ScalarField;
 use std::hash::poseidon2::Poseidon2::hash;
 
@@ -116,7 +116,7 @@ fn poseidon_12_coordinates(
 
 #[test]
 fn test_compress_ec_point() {
-    let sk: Secp256k1Fr = BigNum::from_be_bytes([
+    let sk: Secp256k1Fr = Secp256k1Fr::from_be_bytes([
         141, 102, 7, 178, 108, 210, 195, 217, 224, 140, 81, 3, 56, 193, 15, 69, 117, 230, 143, 45,
         65, 58, 179, 31, 202, 239, 115, 0, 202, 161, 243, 112,
     ]);
@@ -135,19 +135,19 @@ fn test_compress_ec_point() {
 
 #[test]
 fn test_nullifier() {
-    let sk: Secp256k1Fr = BigNum::from_be_bytes([
+    let sk: Secp256k1Fr = Secp256k1Fr::from_be_bytes([
         81, 155, 66, 61, 113, 95, 139, 88, 31, 79, 168, 238, 89, 244, 119, 26, 91, 68, 200, 19, 11,
         78, 62, 172, 202, 84, 165, 109, 218, 114, 180, 100,
     ]);
     let sk: Secp256k1Scalar = ScalarField::from_bignum(sk);
 
-    let H: Secp256k1 = BigCurve {
-        x: BigNum::from_slice([
+    let H = Secp256k1 {
+        x: Secp256k1Fq::from_slice([
             0x2affbc49c54d1136a2190db0800b65,
             0x2d0e12679f23c218889395abcdc01f,
             0xbcac,
         ]),
-        y: BigNum::from_slice([
+        y: Secp256k1Fq::from_slice([
             0xa91a53e32b3752145d87f0cd70966e,
             0xb339c974c0e757d348081f90a123b0,
             0x3bcf,
@@ -157,12 +157,12 @@ fn test_nullifier() {
 
     let actual = H.mul(sk);
 
-    let expected: Secp256k1 = BigCurve {
-        x: BigNum::from_be_bytes([
+    let expected: Secp256k1 = Secp256k1 {
+        x: Secp256k1Fq::from_be_bytes([
             87, 188, 62, 210, 129, 114, 239, 138, 221, 228, 185, 224, 194, 204, 231, 69, 252, 197,
             166, 100, 115, 164, 92, 30, 98, 111, 29, 12, 103, 229, 88, 48,
         ]),
-        y: BigNum::from_be_bytes([
+        y: Secp256k1Fq::from_be_bytes([
             106, 47, 65, 72, 141, 88, 243, 58, 228, 110, 221, 33, 136, 225, 17, 96, 159, 159, 58,
             230, 126, 163, 143, 168, 145, 214, 8, 127, 229, 158, 203, 115,
         ]),

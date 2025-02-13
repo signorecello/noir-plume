@@ -30,7 +30,7 @@ pub fn hash_to_field<let N: u32>(msg: [u8; N]) -> Secp256k1 {
 }
 
 fn bytes_to_registers(ui: [u8; 48]) -> Secp256k1Fq {
-    let shift = BigNum::from_slice([0, 0x100, 0]);
+    let shift = Secp256k1Fq::from_slice([0, 0x100, 0]);
     let mut small = [0 as u8; 32];
     let mut big = [0 as u8; 32];
 
@@ -40,8 +40,8 @@ fn bytes_to_registers(ui: [u8; 48]) -> Secp256k1Fq {
     for i in 0..32 {
         big[i] = ui[i];
     }
-    let res = BigNum::from_be_bytes(big);
-    res * shift + BigNum::from_be_bytes(small)
+    let res = Secp256k1Fq::from_be_bytes(big);
+    res * shift + Secp256k1Fq::from_be_bytes(small)
 }
 
 #[test]
@@ -54,7 +54,7 @@ fn test_u0_bytes_to_registers() {
 
     let actual = bytes_to_registers(u0_bytes);
 
-    let expected = BigNum::from_slice([
+    let expected = Secp256k1Fq::from_slice([
         0x491f544767e18a4873f397b08a2b61,
         0xab5d3679a1f7601e3bdf94ced1f43e,
         0x128a,
@@ -73,7 +73,7 @@ fn test_u1_bytes_to_registers() {
 
     let actual = bytes_to_registers(u1_bytes);
 
-    let expected = BigNum::from_slice([
+    let expected = Secp256k1Fq::from_slice([
         0x1be76a03518b044daaa0f2e4689e00,
         0xb65da3b595a813d0fdcc75c895dc53,
         0x5897,

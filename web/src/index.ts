@@ -1,11 +1,11 @@
 import { Noir } from '@noir-lang/noir_js';
 import { CompiledCircuit, InputMap } from '@noir-lang/types';
-import { BarretenbergBackend, UltraHonkBackend } from '@noir-lang/backend_barretenberg';
+import { UltraPlonkBackend, UltraHonkBackend } from '@aztec/bb.js';
 import { parse } from 'toml';
 import initNoirC from '@noir-lang/noirc_abi';
 import initACVM from '@noir-lang/acvm_js';
 
-export async function benchPlume(circuitPath: string, inputsPath: string){
+export async function benchPlume(circuitPath: string, inputsPath: string) {
   const [circuit, inputs] = await Promise.all([
     getCompiledCircuit(circuitPath),
     getInputMap(inputsPath),
@@ -36,7 +36,7 @@ export async function getInputMap(path: string): Promise<InputMap> {
   return parsedData;
 }
 
-export async function benchCircuit(circuit: CompiledCircuit, inputs: InputMap){
+export async function benchCircuit(circuit: CompiledCircuit, inputs: InputMap) {
   console.time('Execution Time');
   const { witness } = await new Noir(circuit).execute(inputs);
   console.timeEnd('Execution Time');
@@ -48,7 +48,7 @@ export async function benchCircuit(circuit: CompiledCircuit, inputs: InputMap){
 }
 
 export async function benchUltraPlonk(circuit: CompiledCircuit, witness: Uint8Array) {
-  const backend = new BarretenbergBackend(circuit);
+  const backend = new UltraPlonkBackend(circuit.bytecode);
 
   console.time('UltraPlonk Proof Generation Time');
   const proof = await backend.generateProof(witness);
@@ -61,8 +61,8 @@ export async function benchUltraPlonk(circuit: CompiledCircuit, witness: Uint8Ar
   console.log('UltraPlonk Verification result:', result);
 }
 
-export async function benchUltraHonk(circuit: CompiledCircuit, witness: Uint8Array){
-  const backend = new UltraHonkBackend(circuit);
+export async function benchUltraHonk(circuit: CompiledCircuit, witness: Uint8Array) {
+  const backend = new UltraHonkBackend(circuit.bytecode);
 
   console.time('UltraHonk Proof Generation Time');
   const proof = await backend.generateProof(witness);
@@ -80,14 +80,16 @@ export async function benchUltraHonk(circuit: CompiledCircuit, witness: Uint8Arr
     console.log('Initializing ACVM and NoirC...');
     await Promise.all([
       initACVM(new URL('@noir-lang/acvm_js/web/acvm_js_bg.wasm', import.meta.url).toString()),
-      initNoirC(new URL('@noir-lang/noirc_abi/web/noirc_abi_wasm_bg.wasm', import.meta.url).toString()),
+      initNoirC(
+        new URL('@noir-lang/noirc_abi/web/noirc_abi_wasm_bg.wasm', import.meta.url).toString(),
+      ),
     ]);
 
     console.log('Starting Benchmarks for V1');
-    await benchPlume("/artifacts/use_v1.json", "/artifacts/use_v1_prover.toml");
+    await benchPlume('/artifacts/use_v1.json', '/artifacts/use_v1_prover.toml');
 
     console.log('Starting Benchmarks for V2');
-    await benchPlume("/artifacts/use_v2.json", "/artifacts/use_v2_prover.toml");
+    await benchPlume('/artifacts/use_v2.json', '/artifacts/use_v2_prover.toml');
   } catch (error) {
     console.error('Error running benchmarks:', error);
   }
